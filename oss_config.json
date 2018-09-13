@@ -4,5 +4,6 @@
   "endpoint": "",
   "bucketName": "",
   "ossDomain": "",
-  "localDir": ""
+  "localDir": "",
+  "DestDir": ""
 }
