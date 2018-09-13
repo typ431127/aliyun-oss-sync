@@ -25,15 +25,18 @@ def upload_file_to_aliyun_oss(local_file_path):
     if local_file_path.endswith('.DS_Store') or not os.path.isfile(local_file_path):
         return
     oss_object_key = local_file_path[local_dir.__len__():]
-    oss_response = requests.head('https://' + oss_domain + '/' + oss_object_key)
+    oss_response = requests.head('https://' + oss_domain + '/' + DestDir + '/' + oss_object_key)
     if oss_response.status_code == 200 and content_md5(local_file_path) == oss_response.headers['Content-MD5']:
         return
 
     print('uploading: ' + local_file_path)
-    result = bucket.put_object_from_file(oss_object_key, local_file_path)
+    result = bucket.put_object_from_file(DestDir + '/' + oss_object_key,local_file_path)
     if result.status != 200:
         print('upload error, response information: ' + str(result))
         exit(1)
+    else:
+        print('upload success' + DestDir + '/' + oss_object_key)
+        print()
 
 
 if __name__ == '__main__':
@@ -52,6 +55,8 @@ if __name__ == '__main__':
             raise ValueError('No ossDomain in oss_config.json')
         if 'localDir' not in oss_config:
             raise ValueError('No localDir in oss_config.json')
+        if 'DestDir' not in oss_config:
+            raise ValueError('No DestDir in oss_config.json')
         if not str(oss_config['localDir']).strip().endswith('/'):
             raise ValueError('localDir must end with a slash, example: /Users/Poison/blog/public/')
 
@@ -63,6 +68,7 @@ if __name__ == '__main__':
     bucket = oss2.Bucket(auth, oss_config['endpoint'], oss_config['bucketName'])
     oss_domain = oss_config['ossDomain']
     local_dir = oss_config['localDir']
+    DestDir=oss_config['DestDir']
 
     with ThreadPoolExecutor() as executor:
         for dirpath, dirnames, filenames in os.walk(local_dir):
